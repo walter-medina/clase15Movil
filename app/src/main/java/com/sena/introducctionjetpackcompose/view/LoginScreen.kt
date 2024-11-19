@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
@@ -25,20 +27,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.sena.introducctionjetpackcompose.R
 import com.sena.introducctionjetpackcompose.ui.theme.PurpleGrey80
 import com.sena.introducctionjetpackcompose.ui.theme.Red50
+import com.sena.introducctionjetpackcompose.viewmodel.LoginViewModel
 
 
 @Composable
 fun LoginScreen(navController: NavController) {
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
+    // Obtener el ViewModel
+    val loginViewModel: LoginViewModel = viewModel()
+    // Obtener los valores del ViewModel
+    val email = loginViewModel.email
+    val password = loginViewModel.password
 
     Column(
         modifier = Modifier
@@ -47,10 +56,10 @@ fun LoginScreen(navController: NavController) {
     ) {
         ViewTittle()
         ViewImage()
-        ViewBoxEmail(email) { email = it }
-        ViewPassword(password) { password = it }
+        ViewBoxEmail(email) { loginViewModel.email = it }
+        ViewPassword(password) { loginViewModel.password = it }
         Spacer(modifier = Modifier.height(60.dp))
-        ViewButton(email, password, navController, context)
+        ViewButton(loginViewModel, navController, context)
     }
 }
 
@@ -118,6 +127,9 @@ fun ViewPassword(
         value = password,
         onValueChange = onPassWordChange,
         label = { Text(text = "Password") },
+        keyboardOptions = KeyboardOptions.Default
+            .copy(keyboardType = KeyboardType.NumberPassword),//solo muestre el teclado numérico
+        visualTransformation = PasswordVisualTransformation(),//para ocultar la contraseña
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.White, // Borde al enfocar
             unfocusedBorderColor = PurpleGrey80, // Borde sin enfocar
@@ -132,13 +144,16 @@ fun ViewPassword(
 
 @Composable
 fun ViewButton(
-    email: String,
-    password: String,
+    loginViewModel: LoginViewModel,
     navController: NavController,
     context: Context
 ) {
     Button(
-        onClick = { goToHome(email, password, navController, context) },
+        onClick = {
+            loginViewModel.onLogin(navController) {
+                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            }
+        },
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
@@ -148,18 +163,5 @@ fun ViewButton(
     }
 }
 
-fun goToHome(
-    email: String,
-    password: String,
-    navController: NavController,
-    context: Context
-) {
-    if (email == "walter.medina@gmail.com" && password == "123456"){
-        navController.navigate("home")
-    }else{
-        Toast.makeText(context,"Email o contraseña incorrectos", Toast.LENGTH_LONG).show()
-    }
-
-}
 
 
