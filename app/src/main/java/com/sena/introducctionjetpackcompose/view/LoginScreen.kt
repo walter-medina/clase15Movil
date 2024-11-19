@@ -26,17 +26,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.sena.introducctionjetpackcompose.R
 import com.sena.introducctionjetpackcompose.ui.theme.PurpleGrey80
 import com.sena.introducctionjetpackcompose.ui.theme.Red50
 
-@Preview(showSystemUi = true)
+
 @Composable
-fun LoginScreen() {
+fun LoginScreen(navController: NavController) {
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -44,12 +47,11 @@ fun LoginScreen() {
     ) {
         ViewTittle()
         ViewImage()
-        ViewBoxEmail()
-        ViewPassword()
+        ViewBoxEmail(email) { email = it }
+        ViewPassword(password) { password = it }
         Spacer(modifier = Modifier.height(60.dp))
-        ViewButton(context)
+        ViewButton(email, password, navController, context)
     }
-
 }
 
 @Composable
@@ -79,14 +81,17 @@ fun ViewImage() {
 }
 
 @Composable
-fun ViewBoxEmail() {
-    var email by rememberSaveable { mutableStateOf("") }
+fun ViewBoxEmail(
+    email: String,
+    onEmailChange: (String) -> Unit
+) {
 
-    OutlinedTextField(modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 20.dp, vertical = 15.dp),
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 15.dp),
         value = email,
-        onValueChange = { email = it },
+        onValueChange = onEmailChange,
         label = { Text(text = "Email") },
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.White, // Borde al enfocar
@@ -101,14 +106,17 @@ fun ViewBoxEmail() {
 }
 
 @Composable
-fun ViewPassword() {
-    var password by rememberSaveable { mutableStateOf("") }
+fun ViewPassword(
+    password: String,
+    onPassWordChange: (String) -> Unit
+) {
+
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 15.dp),
         value = password,
-        onValueChange = { password = it },
+        onValueChange = onPassWordChange,
         label = { Text(text = "Password") },
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.White, // Borde al enfocar
@@ -123,9 +131,14 @@ fun ViewPassword() {
 }
 
 @Composable
-fun ViewButton(context:Context) {
+fun ViewButton(
+    email: String,
+    password: String,
+    navController: NavController,
+    context: Context
+) {
     Button(
-        onClick = { Toast.makeText(context, "Hola mundo", Toast.LENGTH_LONG).show() },
+        onClick = { goToHome(email, password, navController, context) },
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
@@ -134,3 +147,19 @@ fun ViewButton(context:Context) {
         Text(text = "Iniciar Sesión", fontSize = 16.sp)
     }
 }
+
+fun goToHome(
+    email: String,
+    password: String,
+    navController: NavController,
+    context: Context
+) {
+    if (email == "walter.medina@gmail.com" && password == "123456"){
+        navController.navigate("home")
+    }else{
+        Toast.makeText(context,"Email o contraseña incorrectos", Toast.LENGTH_LONG).show()
+    }
+
+}
+
+
