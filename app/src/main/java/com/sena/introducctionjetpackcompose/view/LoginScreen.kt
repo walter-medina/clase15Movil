@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -19,9 +18,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,16 +35,12 @@ import com.sena.introducctionjetpackcompose.R
 import com.sena.introducctionjetpackcompose.ui.theme.PurpleGrey80
 import com.sena.introducctionjetpackcompose.ui.theme.Red50
 import com.sena.introducctionjetpackcompose.viewmodel.LoginViewModel
-
-
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(loginViewModel: LoginViewModel, navController: NavController) {
     val context = LocalContext.current
-    // Obtener el ViewModel
-    val loginViewModel: LoginViewModel = viewModel()
-    // Obtener los valores del ViewModel
-    val email = loginViewModel.email
-    val password = loginViewModel.password
+    val email:String by loginViewModel.email.observeAsState(initial = "")
+    val password:String by loginViewModel.password.observeAsState(initial = "")
+    val isLogin:Boolean by loginViewModel.isLogin.observeAsState(initial = false)
 
     Column(
         modifier = Modifier
@@ -56,10 +49,14 @@ fun LoginScreen(navController: NavController) {
     ) {
         ViewTittle()
         ViewImage()
-        ViewBoxEmail(email) { loginViewModel.email = it }
-        ViewPassword(password) { loginViewModel.password = it }
+        ViewBoxEmail(email) { email ->
+            loginViewModel.onLoginChange(email, password)
+        }
+        ViewPassword(password) { password ->
+            loginViewModel.onLoginChange(email, password)
+        }
         Spacer(modifier = Modifier.height(60.dp))
-        ViewButton(loginViewModel, navController, context)
+        ViewButton(isLogin,navController, context)
     }
 }
 
@@ -91,7 +88,7 @@ fun ViewImage() {
 
 @Composable
 fun ViewBoxEmail(
-    email: String,
+    email:String,
     onEmailChange: (String) -> Unit
 ) {
 
@@ -100,7 +97,7 @@ fun ViewBoxEmail(
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 15.dp),
         value = email,
-        onValueChange = onEmailChange,
+        onValueChange = {onEmailChange(it)},
         label = { Text(text = "Email") },
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color.White, // Borde al enfocar
@@ -125,7 +122,7 @@ fun ViewPassword(
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 15.dp),
         value = password,
-        onValueChange = onPassWordChange,
+        onValueChange = {onPassWordChange(it)},
         label = { Text(text = "Password") },
         keyboardOptions = KeyboardOptions.Default
             .copy(keyboardType = KeyboardType.NumberPassword),//solo muestre el teclado numérico
@@ -144,14 +141,16 @@ fun ViewPassword(
 
 @Composable
 fun ViewButton(
-    loginViewModel: LoginViewModel,
+    isLogin: Boolean,
     navController: NavController,
     context: Context
 ) {
     Button(
         onClick = {
-            loginViewModel.onLogin(navController) {
-                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            if (isLogin){
+                navController.navigate("home")
+            }else{
+                Toast.makeText(context,"Login incorrecto",Toast.LENGTH_LONG).show()
             }
         },
         modifier = Modifier

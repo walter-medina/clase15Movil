@@ -8,6 +8,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.sena.introducctionjetpackcompose.viewmodel.LoginViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,15 +28,13 @@ fun AppNavigation() {
         startDestination = "login"
     ) {
         composable("login") {
-            LoginScreen(navController = navController)
+            LoginScreen(LoginViewModel(), navController = navController)
         }
         composable("home") {
             HomeScreen()
         }
     }
-
 }
-
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun VistaLoginPreview() {
